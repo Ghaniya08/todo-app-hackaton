@@ -1,0 +1,487 @@
+openapi: 3.0.3
+info:
+  title: Todo Backend Task API
+  description: |
+    RESTful API for secure, user-scoped task management with persistent storage.
+
+    **Features**:
+    - Complete CRUD operations on tasks
+    - User data isolation (users only access their own tasks)
+    - Persistent storage in Neon Serverless PostgreSQL
+    - JWT-ready architecture (authentication added in Spec 2)
+
+    **Base URL**: `/api/{user_id}/tasks`
+
+    **Specification**: specs/001-backend-task-api/spec.md
+  version: 1.0.0
+  contact:
+    name: Backend Task API
+    url: https://github.com/your-repo/todo-full-stack-web-application
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.yourdomain.com
+    description: Production server
+
+tags:
+  - name: tasks
+    description: Task management operations
+
+paths:
+  /api/{user_id}/tasks:
+    get:
+      tags:
+        - tasks
+      summary: List all tasks for a user
+      description: |
+        Retrieves all tasks belonging to the specified user.
+        Tasks are returned in descending order by creation date (newest first).
+
+        **User Story**: P1 - Create and View Tasks
+        **Spec Reference**: FR-004
+      operationId: listTasks
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        '200':
+          description: Successfully retrieved task list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+              examples:
+                emptyList:
+                  summary: No tasks
+                  value: []
+                withTasks:
+                  summary: User with tasks
+                  value:
+                    - id: 3
+                      user_id: "user123"
+                      title: "Complete project report"
+                      description: "Finish the Q4 report by Friday"
+                      completed: false
+                      created_at: "2026-02-08T14:30:00Z"
+                      updated_at: "2026-02-08T14:30:00Z"
+                    - id: 2
+                      user_id: "user123"
+                      title: "Buy groceries"
+                      description: "Milk, eggs, bread"
+                      completed: true
+                      created_at: "2026-02-08T10:15:00Z"
+                      updated_at: "2026-02-08T12:00:00Z"
+                    - id: 1
+                      user_id: "user123"
+                      title: "Call dentist"
+                      description: null
+                      completed: false
+                      created_at: "2026-02-07T09:00:00Z"
+                      updated_at: "2026-02-07T09:00:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - tasks
+      summary: Create a new task
+      description: |
+        Creates a new task for the specified user.
+        The task is initially marked as incomplete (completed = false).
+
+        **User Story**: P1 - Create and View Tasks
+        **Spec Reference**: FR-003, FR-016
+      operationId: createTask
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+            examples:
+              withDescription:
+                summary: Task with description
+                value:
+                  title: "Buy groceries"
+                  description: "Milk, eggs, bread, cheese"
+              withoutDescription:
+                summary: Task without description
+                value:
+                  title: "Call dentist"
+      responses:
+        '201':
+          description: Task successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              example:
+                id: 1
+                user_id: "user123"
+                title: "Buy groceries"
+                description: "Milk, eggs, bread, cheese"
+                completed: false
+                created_at: "2026-02-08T14:30:00Z"
+                updated_at: "2026-02-08T14:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/{user_id}/tasks/{id}:
+    get:
+      tags:
+        - tasks
+      summary: Get a specific task
+      description: |
+        Retrieves details of a specific task by ID.
+        Returns 404 if the task doesn't exist or doesn't belong to the user.
+
+        **User Story**: P1 - Create and View Tasks
+        **Spec Reference**: FR-005, FR-014
+      operationId: getTask
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+        - $ref: '#/components/parameters/TaskIdPath'
+      responses:
+        '200':
+          description: Successfully retrieved task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              example:
+                id: 1
+                user_id: "user123"
+                title: "Buy groceries"
+                description: "Milk, eggs, bread"
+                completed: false
+                created_at: "2026-02-08T14:30:00Z"
+                updated_at: "2026-02-08T14:30:00Z"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - tasks
+      summary: Update a task
+      description: |
+        Updates the title and/or description of an existing task.
+        Does NOT change the completion status (use PATCH /complete for that).
+        Returns 404 if the task doesn't exist or doesn't belong to the user.
+
+        **User Story**: P2 - Update and Delete Tasks
+        **Spec Reference**: FR-006, FR-017
+      operationId: updateTask
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+        - $ref: '#/components/parameters/TaskIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+            example:
+              title: "Buy groceries and supplies"
+              description: "Milk, eggs, bread, cheese, cleaning supplies"
+      responses:
+        '200':
+          description: Task successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              example:
+                id: 1
+                user_id: "user123"
+                title: "Buy groceries and supplies"
+                description: "Milk, eggs, bread, cheese, cleaning supplies"
+                completed: false
+                created_at: "2026-02-08T14:30:00Z"
+                updated_at: "2026-02-08T15:45:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - tasks
+      summary: Delete a task
+      description: |
+        Permanently deletes a task.
+        Returns 404 if the task doesn't exist or doesn't belong to the user.
+
+        **User Story**: P2 - Update and Delete Tasks
+        **Spec Reference**: FR-007, FR-018
+      operationId: deleteTask
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+        - $ref: '#/components/parameters/TaskIdPath'
+      responses:
+        '204':
+          description: Task successfully deleted (no content)
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/{user_id}/tasks/{id}/complete:
+    patch:
+      tags:
+        - tasks
+      summary: Toggle task completion status
+      description: |
+        Toggles the completion status of a task.
+        If the task is incomplete, marks it as complete.
+        If the task is complete, marks it as incomplete.
+        Returns 404 if the task doesn't exist or doesn't belong to the user.
+
+        **User Story**: P3 - Mark Tasks Complete
+        **Spec Reference**: FR-008, FR-017
+      operationId: toggleTaskCompletion
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+        - $ref: '#/components/parameters/TaskIdPath'
+      responses:
+        '200':
+          description: Task completion status successfully toggled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              examples:
+                markedComplete:
+                  summary: Task marked as complete
+                  value:
+                    id: 1
+                    user_id: "user123"
+                    title: "Buy groceries"
+                    description: "Milk, eggs, bread"
+                    completed: true
+                    created_at: "2026-02-08T14:30:00Z"
+                    updated_at: "2026-02-08T16:00:00Z"
+                markedIncomplete:
+                  summary: Task marked as incomplete
+                  value:
+                    id: 1
+                    user_id: "user123"
+                    title: "Buy groceries"
+                    description: "Milk, eggs, bread"
+                    completed: false
+                    created_at: "2026-02-08T14:30:00Z"
+                    updated_at: "2026-02-08T16:05:00Z"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  parameters:
+    UserIdPath:
+      name: user_id
+      in: path
+      required: true
+      description: |
+        Unique identifier for the user.
+        Accepts any non-empty string (UUID, email, username, OAuth ID).
+        In Phase II, any user_id is accepted (no validation).
+        In Spec 2 (JWT), this will be validated against the authenticated user.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+      example: "user123"
+
+    TaskIdPath:
+      name: id
+      in: path
+      required: true
+      description: Unique identifier for the task (auto-increment integer)
+      schema:
+        type: integer
+        minimum: 1
+      example: 1
+
+  schemas:
+    Task:
+      type: object
+      description: Complete task object with all fields
+      required:
+        - id
+        - user_id
+        - title
+        - completed
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+          description: Unique task identifier (auto-increment)
+          example: 1
+        user_id:
+          type: string
+          description: Owner identifier from authentication system
+          minLength: 1
+          maxLength: 255
+          example: "user123"
+        title:
+          type: string
+          description: Short description of the task
+          minLength: 1
+          maxLength: 200
+          example: "Buy groceries"
+        description:
+          type: string
+          nullable: true
+          description: Detailed information about the task (optional)
+          maxLength: 1000
+          example: "Milk, eggs, bread, cheese"
+        completed:
+          type: boolean
+          description: Completion status (true = done, false = pending)
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          description: UTC timestamp when task was created (ISO 8601)
+          example: "2026-02-08T14:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: UTC timestamp when task was last modified (ISO 8601)
+          example: "2026-02-08T14:30:00Z"
+
+    TaskCreate:
+      type: object
+      description: Request body for creating a new task
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          description: Short description of the task (required)
+          minLength: 1
+          maxLength: 200
+          example: "Buy groceries"
+        description:
+          type: string
+          nullable: true
+          description: Detailed information about the task (optional)
+          maxLength: 1000
+          example: "Milk, eggs, bread, cheese"
+
+    TaskUpdate:
+      type: object
+      description: Request body for updating an existing task
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          description: Short description of the task (required)
+          minLength: 1
+          maxLength: 200
+          example: "Buy groceries and supplies"
+        description:
+          type: string
+          nullable: true
+          description: Detailed information about the task (optional)
+          maxLength: 1000
+          example: "Milk, eggs, bread, cheese, cleaning supplies"
+
+    Error:
+      type: object
+      description: Standard error response format (FastAPI HTTPException)
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: "Task not found"
+
+    ValidationError:
+      type: object
+      description: Validation error response (Pydantic)
+      required:
+        - detail
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                items:
+                  type: string
+                description: Location of the error (e.g., ["body", "title"])
+              msg:
+                type: string
+                description: Error message
+              type:
+                type: string
+                description: Error type
+          example:
+            - loc: ["body", "title"]
+              msg: "field required"
+              type: "value_error.missing"
+
+  responses:
+    BadRequest:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/Error'
+              - $ref: '#/components/schemas/ValidationError'
+          examples:
+            emptyTitle:
+              summary: Empty title
+              value:
+                detail: "Title is required"
+            titleTooLong:
+              summary: Title exceeds max length
+              value:
+                detail:
+                  - loc: ["body", "title"]
+                    msg: "ensure this value has at most 200 characters"
+                    type: "value_error.any_str.max_length"
+            descriptionTooLong:
+              summary: Description exceeds max length
+              value:
+                detail:
+                  - loc: ["body", "description"]
+                    msg: "ensure this value has at most 1000 characters"
+                    type: "value_error.any_str.max_length"
+
+    NotFound:
+      description: Task not found or doesn't belong to user
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "Task not found"
+
+    InternalServerError:
+      description: Server-side error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "Service temporarily unavailable"

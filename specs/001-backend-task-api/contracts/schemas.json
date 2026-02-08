@@ -1,0 +1,225 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Todo Backend Task API Schemas",
+  "description": "JSON Schema definitions for request and response objects",
+  "definitions": {
+    "Task": {
+      "type": "object",
+      "title": "Task",
+      "description": "Complete task object with all fields",
+      "required": [
+        "id",
+        "user_id",
+        "title",
+        "completed",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Unique task identifier (auto-increment)",
+          "minimum": 1,
+          "example": 1
+        },
+        "user_id": {
+          "type": "string",
+          "description": "Owner identifier from authentication system",
+          "minLength": 1,
+          "maxLength": 255,
+          "example": "user123"
+        },
+        "title": {
+          "type": "string",
+          "description": "Short description of the task",
+          "minLength": 1,
+          "maxLength": 200,
+          "example": "Buy groceries"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Detailed information about the task (optional)",
+          "maxLength": 1000,
+          "example": "Milk, eggs, bread, cheese"
+        },
+        "completed": {
+          "type": "boolean",
+          "description": "Completion status (true = done, false = pending)",
+          "example": false
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "UTC timestamp when task was created (ISO 8601)",
+          "example": "2026-02-08T14:30:00Z"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "UTC timestamp when task was last modified (ISO 8601)",
+          "example": "2026-02-08T14:30:00Z"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TaskCreate": {
+      "type": "object",
+      "title": "TaskCreate",
+      "description": "Request body for creating a new task",
+      "required": ["title"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Short description of the task (required)",
+          "minLength": 1,
+          "maxLength": 200,
+          "example": "Buy groceries"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Detailed information about the task (optional)",
+          "maxLength": 1000,
+          "example": "Milk, eggs, bread, cheese"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TaskUpdate": {
+      "type": "object",
+      "title": "TaskUpdate",
+      "description": "Request body for updating an existing task",
+      "required": ["title"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Short description of the task (required)",
+          "minLength": 1,
+          "maxLength": 200,
+          "example": "Buy groceries and supplies"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Detailed information about the task (optional)",
+          "maxLength": 1000,
+          "example": "Milk, eggs, bread, cheese, cleaning supplies"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TaskList": {
+      "type": "array",
+      "title": "TaskList",
+      "description": "Array of task objects",
+      "items": {
+        "$ref": "#/definitions/Task"
+      }
+    },
+    "Error": {
+      "type": "object",
+      "title": "Error",
+      "description": "Standard error response format (FastAPI HTTPException)",
+      "required": ["detail"],
+      "properties": {
+        "detail": {
+          "type": "string",
+          "description": "Human-readable error message",
+          "example": "Task not found"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ValidationError": {
+      "type": "object",
+      "title": "ValidationError",
+      "description": "Validation error response (Pydantic)",
+      "required": ["detail"],
+      "properties": {
+        "detail": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["loc", "msg", "type"],
+            "properties": {
+              "loc": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Location of the error (e.g., ['body', 'title'])"
+              },
+              "msg": {
+                "type": "string",
+                "description": "Error message"
+              },
+              "type": {
+                "type": "string",
+                "description": "Error type"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": {
+    "taskExample": {
+      "id": 1,
+      "user_id": "user123",
+      "title": "Buy groceries",
+      "description": "Milk, eggs, bread, cheese",
+      "completed": false,
+      "created_at": "2026-02-08T14:30:00Z",
+      "updated_at": "2026-02-08T14:30:00Z"
+    },
+    "taskCreateExample": {
+      "title": "Buy groceries",
+      "description": "Milk, eggs, bread, cheese"
+    },
+    "taskUpdateExample": {
+      "title": "Buy groceries and supplies",
+      "description": "Milk, eggs, bread, cheese, cleaning supplies"
+    },
+    "taskListExample": [
+      {
+        "id": 3,
+        "user_id": "user123",
+        "title": "Complete project report",
+        "description": "Finish the Q4 report by Friday",
+        "completed": false,
+        "created_at": "2026-02-08T14:30:00Z",
+        "updated_at": "2026-02-08T14:30:00Z"
+      },
+      {
+        "id": 2,
+        "user_id": "user123",
+        "title": "Buy groceries",
+        "description": "Milk, eggs, bread",
+        "completed": true,
+        "created_at": "2026-02-08T10:15:00Z",
+        "updated_at": "2026-02-08T12:00:00Z"
+      },
+      {
+        "id": 1,
+        "user_id": "user123",
+        "title": "Call dentist",
+        "description": null,
+        "completed": false,
+        "created_at": "2026-02-07T09:00:00Z",
+        "updated_at": "2026-02-07T09:00:00Z"
+      }
+    ],
+    "errorExample": {
+      "detail": "Task not found"
+    },
+    "validationErrorExample": {
+      "detail": [
+        {
+          "loc": ["body", "title"],
+          "msg": "field required",
+          "type": "value_error.missing"
+        }
+      ]
+    }
+  }
+}
