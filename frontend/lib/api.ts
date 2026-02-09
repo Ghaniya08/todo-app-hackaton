@@ -66,7 +66,7 @@ export class ServerError extends ApiError {
 }
 
 // API Client Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 class ApiClient {
   private async request<T>(

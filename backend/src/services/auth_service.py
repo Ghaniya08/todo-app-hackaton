@@ -77,7 +77,11 @@ class AuthService:
             raise ValueError("Email already registered")
 
         # [Task]: T019 - Hash password with bcrypt cost factor 12
-        password_hash = pwd_context.hash(password)
+        # Bcrypt has a 72-byte limit, truncate password if necessary
+        # This ensures compatibility with bcrypt's internal limitations
+        password_bytes = password.encode('utf-8')[:72]
+        password_truncated = password_bytes.decode('utf-8', errors='ignore')
+        password_hash = pwd_context.hash(password_truncated)
 
         # [Task]: T019 - Generate UUID for user_id
         user_id = str(uuid.uuid4())
@@ -133,7 +137,10 @@ class AuthService:
             return None
 
         # [Task]: T020 - Verify password hash using bcrypt
-        if not pwd_context.verify(password, user.password_hash):
+        # Bcrypt has a 72-byte limit, truncate password if necessary (same as signup)
+        password_bytes = password.encode('utf-8')[:72]
+        password_truncated = password_bytes.decode('utf-8', errors='ignore')
+        if not pwd_context.verify(password_truncated, user.password_hash):
             logger.warning(f"Signin attempt with incorrect password for email: {email}")
             return None
 
