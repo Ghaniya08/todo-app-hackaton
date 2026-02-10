@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
-  // Check for token cookie (JWT token set by backend)
-  const tokenCookie = request.cookies.get('token');
-  const hasSession = !!tokenCookie;
+// [Task]: AUTH-FIX-002
+// [From]: Cross-origin cookie issue - backend on different domain than frontend
+// When backend is on a different domain (e.g., HuggingFace Space), cookies are set
+// for that domain and not accessible to Next.js middleware on localhost.
+// Solution: Disable middleware auth checks, let client-side auth context handle it.
 
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow home page without authentication
@@ -13,20 +15,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Define protected and auth-only routes
-  const isAuthPage = pathname.startsWith('/signin') || pathname.startsWith('/signup');
-  const isProtectedPage = pathname.startsWith('/dashboard');
+  // For cross-origin backend setup, we cannot check cookies in middleware
+  // because cookies are set on the backend domain, not localhost.
+  // Client-side auth context will handle authentication checks.
 
-  // Redirect authenticated users away from auth pages
-  if (hasSession && isAuthPage) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
-
-  // Redirect unauthenticated users to signin
-  if (!hasSession && isProtectedPage) {
-    return NextResponse.redirect(new URL('/signin', request.url));
-  }
-
+  // Allow all routes - auth context will handle redirects
   return NextResponse.next();
 }
 

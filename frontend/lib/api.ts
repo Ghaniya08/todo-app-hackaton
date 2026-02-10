@@ -75,6 +75,8 @@ class ApiClient {
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
 
+    console.log(`[API] ${options.method || 'GET'} ${endpoint}`);
+
     try {
       const response = await fetch(url, {
         ...options,
@@ -84,6 +86,8 @@ class ApiClient {
         },
         credentials: 'include', // Include cookies (JWT token)
       });
+
+      console.log(`[API] Response status: ${response.status}`);
 
       // Handle error responses
       if (!response.ok) {

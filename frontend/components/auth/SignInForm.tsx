@@ -37,10 +37,17 @@ export function SignInForm() {
     setError(null);
 
     try {
+      // [Task]: AUTH-FIX-002
+      // [From]: Cross-origin cookie issue - simplified redirect
+      // Auth context updates state, then navigate to dashboard
+      // Auth layout will handle keeping authenticated users on dashboard
       await signin(data.email, data.password);
+
       toast.success('Welcome back!', {
         description: 'You have successfully signed in.',
       });
+
+      // Navigate to dashboard - auth context has updated state
       router.push('/dashboard');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Sign in failed. Please check your credentials.';
@@ -48,9 +55,9 @@ export function SignInForm() {
       toast.error('Sign in failed', {
         description: errorMessage,
       });
-    } finally {
       setIsLoading(false);
     }
+    // Note: Don't set isLoading to false on success - keep loading during redirect
   };
 
   return (

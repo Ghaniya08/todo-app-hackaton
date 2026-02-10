@@ -24,6 +24,10 @@ export default function DashboardPage() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  // [Task]: AUTH-FIX-002
+  // [From]: Cross-origin cookie issue - restore client-side auth guard
+  // Since middleware can't check cookies (backend on different domain),
+  // we need client-side redirect for unauthenticated users
   useEffect(() => {
     // Redirect to signin if not authenticated
     if (!authLoading && !isAuthenticated) {
@@ -151,18 +155,15 @@ export default function DashboardPage() {
     }
   };
 
-  // Show loading spinner while checking auth
-  if (authLoading) {
+  // [Task]: AUTH-FIX-001
+  // [From]: Authentication redirect fix - improved loading state handling
+  // Show loading spinner while checking auth or if middleware hasn't redirected yet
+  if (authLoading || !isAuthenticated || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Spinner size="lg" />
       </div>
     );
-  }
-
-  // Don't render if not authenticated (will redirect)
-  if (!isAuthenticated || !user) {
-    return null;
   }
 
   return (

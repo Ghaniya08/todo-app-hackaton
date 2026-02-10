@@ -42,10 +42,17 @@ export function SignUpForm() {
     setError(null);
 
     try {
+      // [Task]: AUTH-FIX-002
+      // [From]: Cross-origin cookie issue - simplified redirect
+      // Auth context updates state, then navigate to dashboard
+      // Auth layout will handle keeping authenticated users on dashboard
       await signup(data.email, data.password, data.name);
+
       toast.success('Account created successfully!', {
         description: `Welcome, ${data.name}!`,
       });
+
+      // Navigate to dashboard - auth context has updated state
       router.push('/dashboard');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Sign up failed. Please try again.';
@@ -53,9 +60,9 @@ export function SignUpForm() {
       toast.error('Sign up failed', {
         description: errorMessage,
       });
-    } finally {
       setIsLoading(false);
     }
+    // Note: Don't set isLoading to false on success - keep loading during redirect
   };
 
   return (

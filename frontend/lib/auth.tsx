@@ -24,24 +24,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
+      console.log('[AUTH] Checking authentication...');
       const user = await api.auth.me();
+      console.log('[AUTH] User authenticated:', user);
       setUser(user);
     } catch (error) {
       // Not authenticated or session expired
+      console.log('[AUTH] Authentication check failed:', error);
       setUser(null);
     } finally {
+      console.log('[AUTH] Setting isLoading to false');
       setIsLoading(false);
     }
   };
 
+  // [Task]: AUTH-FIX-001
+  // [From]: Authentication redirect fix - ensure state updates before navigation
   const signin = async (email: string, password: string) => {
+    console.log('[AUTH] Signing in...');
     const user = await api.auth.signin({ email, password });
+    console.log('[AUTH] Signin successful, user:', user);
+    // Update user state immediately after successful signin
+    // The backend has set the httpOnly cookie, and we have the user data
     setUser(user);
+    console.log('[AUTH] User state updated');
+    return user;
   };
 
   const signup = async (email: string, password: string, name: string) => {
+    console.log('[AUTH] Signing up...');
     const user = await api.auth.signup({ email, password, name });
+    console.log('[AUTH] Signup successful, user:', user);
+    // Update user state immediately after successful signup
+    // The backend has set the httpOnly cookie, and we have the user data
     setUser(user);
+    console.log('[AUTH] User state updated');
+    return user;
   };
 
   const signout = async () => {
