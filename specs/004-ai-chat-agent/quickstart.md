@@ -10,7 +10,7 @@ Before starting, ensure you have:
 - [ ] Phase II backend running (FastAPI with task endpoints)
 - [ ] Phase II frontend running (Next.js with authentication)
 - [ ] Neon PostgreSQL database configured
-- [ ] OpenAI API key (for agent)
+<!-- - [ ] OpenAI API key (for agent) -->
 - [ ] Python 3.13+ installed
 - [ ] Node.js 20+ installed
 
