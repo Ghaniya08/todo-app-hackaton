@@ -29,6 +29,38 @@ class Settings:
         self.better_auth_secret: str = self._get_required_env("BETTER_AUTH_SECRET")
         self._validate_auth_secret()
 
+        # [Task]: T002 - AI Chat Agent Configuration (Phase III)
+        # [From]: specs/004-ai-chat-agent/plan.md §Dependencies
+        # Supports: openai, gemini, groq
+        self.ai_provider: str = os.getenv("AI_PROVIDER", "gemini")
+        self.ai_api_key: str = os.getenv("AI_API_KEY") or os.getenv("OPENAI_API_KEY", "")
+        self.ai_model: str = os.getenv("AI_MODEL", self._get_default_model())
+        self.ai_base_url: Optional[str] = os.getenv("AI_BASE_URL", self._get_default_base_url())
+        self.chat_context_limit: int = int(os.getenv("CHAT_CONTEXT_LIMIT", "20"))
+        self.chat_timeout_seconds: int = int(os.getenv("CHAT_TIMEOUT_SECONDS", "30"))
+
+        # Legacy support
+        self.openai_api_key: str = self.ai_api_key
+        self.openai_model: str = self.ai_model
+
+    def _get_default_model(self) -> str:
+        """Get default model based on provider."""
+        models = {
+            "openai": "gpt-4o-mini",
+            "gemini": "gemini-2.0-flash",
+            "groq": "llama-3.3-70b-versatile",
+        }
+        return models.get(self.ai_provider, "gpt-4o-mini")
+
+    def _get_default_base_url(self) -> Optional[str]:
+        """Get default base URL based on provider."""
+        urls = {
+            "openai": None,  # Uses default
+            "gemini": "https://generativelanguage.googleapis.com/v1beta/openai/",
+            "groq": "https://api.groq.com/openai/v1",
+        }
+        return urls.get(self.ai_provider)
+
     def _get_required_env(self, key: str) -> str:
         """
         Get required environment variable or raise error.

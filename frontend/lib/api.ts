@@ -10,6 +10,12 @@ import type {
   TaskUpdate,
   TaskListResponse,
 } from '@/types/task';
+import type {
+  ChatRequest,
+  ChatResponse,
+  ConversationSummary,
+  Message,
+} from '@/types/chat';
 
 // API Error Classes
 export class ApiError extends Error {
@@ -181,6 +187,32 @@ class ApiClient {
       this.request(`/api/${userId}/tasks/${taskId}`, {
         method: 'DELETE',
       }),
+  };
+
+  // [Task]: T004 - Chat API methods (Phase III)
+  // [From]: specs/004-ai-chat-agent/contracts/chat-api.yaml
+  chat = {
+    /**
+     * Send a message to the AI chat agent.
+     * Creates a new conversation if conversation_id is not provided.
+     */
+    sendMessage: (userId: string, data: ChatRequest): Promise<ChatResponse> =>
+      this.request(`/api/${userId}/chat`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    /**
+     * Get list of user's conversations.
+     */
+    listConversations: (userId: string, limit: number = 20): Promise<ConversationSummary[]> =>
+      this.request(`/api/${userId}/conversations?limit=${limit}`),
+
+    /**
+     * Get messages in a specific conversation.
+     */
+    getMessages: (userId: string, conversationId: string, limit: number = 50): Promise<Message[]> =>
+      this.request(`/api/${userId}/conversations/${conversationId}/messages?limit=${limit}`),
   };
 }
 

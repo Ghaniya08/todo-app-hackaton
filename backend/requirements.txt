@@ -7,8 +7,7 @@ python-dotenv==1.0.0
 
 # Authentication Dependencies
 PyJWT==2.8.0
-passlib[bcrypt]==1.7.4
-bcrypt==3.2.0  # Pin to 3.2.0 for compatibility with passlib 1.7.4
+argon2-cffi
 
 # Testing Dependencies
 pytest==7.4.4
@@ -16,7 +15,16 @@ pytest-asyncio==0.23.3
 httpx==0.26.0
 pytest-cov==4.1.0
 
+# AI Agent Dependencies (Phase III)
+openai>=1.0.0
+agents-sdk>=0.0.1
+
 # Development Dependencies
 black==24.1.1
 ruff==0.1.14
 mypy==1.8.0
+
+
+
+
+

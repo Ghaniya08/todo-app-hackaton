@@ -114,15 +114,15 @@ async def signup(
         # - Secure: Only sent over HTTPS (production)
         # - SameSite=Strict: CSRF protection
         # - Max-Age=86400: 24 hours (24 * 60 * 60 seconds)
-        from ..config import settings
         response.set_cookie(
-            key="token",
-            value=jwt_token,
-            httponly=True,
-            secure=settings.is_production,  # Only secure in production (HTTPS)
-            samesite="lax",  # Changed to 'lax' for better localhost compatibility
-            max_age=86400,  # 24 hours in seconds
-        )
+    key="token",
+    value=jwt_token,
+    httponly=True,
+    secure=True,           # production mein MUST TRUE (HTTPS only)
+    samesite="none",       # cross-site ke liye "none" zaroori hai
+    max_age=86400,
+    path="/",
+)
 
         logger.info(f"User signup successful: {user.id} ({user.email})")
 
@@ -233,13 +233,12 @@ async def signin(
         jwt_token = AuthService.generate_jwt(user_id=user.id, email=user.email)
 
         # [Task]: T024 - Set httpOnly cookie
-        from ..config import settings
         response.set_cookie(
             key="token",
             value=jwt_token,
             httponly=True,
-            secure=settings.is_production,  # Only secure in production (HTTPS)
-            samesite="lax",  # Changed to 'lax' for better localhost compatibility
+            secure=True,
+            samesite="none",
             max_age=86400,  # 24 hours
         )
 
@@ -296,15 +295,15 @@ async def signout(response: Response):
         - Client-side token is invalidated
     """
     # [Task]: T025 - Clear JWT cookie with Max-Age=0
-    from ..config import settings
     response.set_cookie(
-        key="token",
-        value="",
-        httponly=True,
-        secure=settings.is_production,  # Only secure in production (HTTPS)
-        samesite="lax",  # Changed to 'lax' for better localhost compatibility
-        max_age=0,  # Immediately expire the cookie
-    )
+    key="token",
+    value="",
+    httponly=True,
+    secure=True,
+    samesite="none",
+    max_age=0,
+    path="/",
+)
 
     logger.info("User signed out successfully")
 
