@@ -38,8 +38,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // [Task]: AUTH-FIX-001
-  // [From]: Authentication redirect fix - ensure state updates before navigation
+  // [Task]: AUTH-FIX-002
+  // [From]: Cross-origin cookie issue - update state without returning user
   const signin = async (email: string, password: string) => {
     console.log('[AUTH] Signing in...');
     const user = await api.auth.signin({ email, password });
@@ -48,7 +48,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // The backend has set the httpOnly cookie, and we have the user data
     setUser(user);
     console.log('[AUTH] User state updated');
-    return user;
   };
 
   const signup = async (email: string, password: string, name: string) => {
@@ -59,7 +58,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // The backend has set the httpOnly cookie, and we have the user data
     setUser(user);
     console.log('[AUTH] User state updated');
-    return user;
   };
 
   const signout = async () => {
